@@ -161,7 +161,7 @@ Proj::map_tran(double ilat, double ilon, double& u, double& v)
 	cosa  = max2(-1.0, amin1);
 	sina = sqrt(1.0 - cosa*cosa);
 
-	if (sina < 0.0001) {   /* error trap */
+	if (sina < 0.000001) {   /* error trap */
 	    sina = 0.0;
 	    if (cosa < 0.0){
 		/*invisible or undefined projection */
@@ -180,7 +180,7 @@ Proj::map_tran(double ilat, double ilon, double& u, double& v)
 	cosb = (sinla*coso - tcos*sino)/sina;
 
 	if (_proj == STEREOGRAPHIC) {
-	    if (fabs(sina) < 0.0001)
+	    if (fabs(sina) < 0.000001)
 		r = sina/2.0;
 	    else
 	        r = (1.0 - cosa)/sina;
