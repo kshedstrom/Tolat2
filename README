@@ -1,0 +1,13 @@
+Start by running "make depend"
+
+This is a double precision version of the map projections done in
+gridpak. These are in C++ and work (today) with g++. In both cases,
+edit the .cc file and provide it with the map projection parameters,
+then compile.
+
+Coast: provide it with strings of lat,lon pairs, ending in a
+special value of 999, 999. See coast.in for example.
+
+Tolat2: give the grid filename as an argument or it will prompt for
+it. It will perform the inverse map projections to find the latitude,
+longitude values on your gridpoints.
