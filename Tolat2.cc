@@ -2,20 +2,21 @@
 #include <iomanip>
 #include <stdlib.h>
 #include <string>
-#include <netcdf.hh>
+#include <netcdf>
 #include <math.h>
 #include "Proj.h"
 
-using namespace::std;
+using namespace std;
+using namespace netCDF;
 
 int main(int argc, char** argv )
 {
 
 // Polar Stereographic - Arctic
-    double plon = 160.;
-    double rota = 0.;
-    double plat = 90.;
-    Proj p(Proj::STEREOGRAPHIC, plat, plon, rota);
+//    double plon = 160.;
+//    double rota = 0.;
+//    double plat = 90.;
+//    Proj p(Proj::STEREOGRAPHIC, plat, plon, rota);
 
 // Polar Stereographic - Chukchi
 //    double plon = -120.;
@@ -65,12 +66,13 @@ int main(int argc, char** argv )
 //    double plon = 180.;
 //    double plon = -150.;
 //    double plon = -139.;
-//    double plon = -91.;
 //    double rota = 63.;
-//    double rota = 60.;
 //    double plat = 57.;
-//    double plat = 40.;
-//    Proj p(Proj::CONIC, plat, plon, rota);
+// NEP7 + CGOA2.5
+    double plon = -91.;
+    double rota = 60.;
+    double plat = 40.;
+    Proj p(Proj::CONIC, plat, plon, rota);
 
 // Caribbean
 //    double plon = -80.;
@@ -110,100 +112,118 @@ int main(int argc, char** argv )
       gridfile = string(argv[1]);
     }
 
-    NcFile nc(gridfile.c_str(), NcFile::Write);
-    NcDim* d_xi_rho = nc.get_dim("xi_rho");
-    NcDim* d_eta_rho = nc.get_dim("eta_rho");
-    NcDim* d_xi_psi = nc.get_dim("xi_psi");
-    NcDim* d_eta_psi = nc.get_dim("eta_psi");
+    NcFile nc(gridfile.c_str(), NcFile::write);
+    NcDim d_xi_rho = nc.getDim("xi_rho");
+    NcDim d_eta_rho = nc.getDim("eta_rho");
+    NcDim d_xi_psi = nc.getDim("xi_psi");
+    NcDim d_eta_psi = nc.getDim("eta_psi");
 
-    int xi_rho = d_xi_rho->size();
-    int eta_rho = d_eta_rho->size();
-    int xi_psi = d_xi_psi->size();
-    int eta_psi = d_eta_psi->size();
+    int xi_rho = d_xi_rho->getSize();
+    int eta_rho = d_eta_rho->getSize();
+    int xi_psi = d_xi_psi->getSize();
+    int eta_psi = d_eta_psi->getSize();
 
-    NcVar* x_psi = nc.get_var("x_psi");
-    NcVar* y_psi = nc.get_var("y_psi");
-    NcVar* lat_psi = nc.get_var("lat_psi");
-    NcVar* lon_psi = nc.get_var("lon_psi");
-    double* xp = new double[xi_psi * eta_psi];
-    double* yp = new double[xi_psi * eta_psi];
-    double* lonp = new double[xi_psi * eta_psi];
-    double* latp = new double[xi_psi * eta_psi];
-    x_psi->get(xp, x_psi->edges());
-    y_psi->get(yp, y_psi->edges());
+    NcVar x_psi = nc.getVar("x_psi");
+    NcVar y_psi = nc.getVar("y_psi");
+    NcVar lat_psi = nc.getVar("lat_psi");
+    NcVar lon_psi = nc.getVar("lon_psi");
+    double xp[eta_psi][xi_psi];
+    double yp[eta_psi][xi_psi];
+    double lonp[eta_psi][xi_psi];
+    double latp[eta_psi][xi_psi];
+    x_psi.getVar(xp);
+    y_psi.getVar(yp);
 
     double u, v;
-    for (int i=0; i < xi_psi*eta_psi; ++i)
+    for (int i=0; i < xi_psi; ++i)
+      for (int j=0; j < eta_psi; ++j)
+        {
+	  u = xp[j][i] * udeg * Proj::RTOD / Proj::REarth;
+	  v = yp[j][i] * udeg * Proj::RTOD / Proj::REarth;
+	  p.map_inv(&latp[j][i], &lonp[j][i], u, v);
+        }
+
+    vector<size_t> startp,countp;
+    startp.push_back(0);
+    startp.push_back(0);
+    countp.push_back(eta_psi);
+    countp.push_back(xi_psi);
+    lat_psi.putVar(startp, countp, latp);
+    lon_psi.putVar(startp, countp, lonp);
+//    delete xp, yp, lonp, latp;
+
+    NcVar x_rho = nc.getVar("x_rho");
+    NcVar y_rho = nc.getVar("y_rho");
+    NcVar lat_rho = nc.getVar("lat_rho");
+    NcVar lon_rho = nc.getVar("lon_rho");
+    double xr[eta_rho][xi_rho];
+    double yr[eta_rho][xi_rho];
+    double lonr[eta_rho][xi_rho];
+    double latr[eta_rho][xi_rho];
+    x_rho.getVar(xr);
+    y_rho.getVar(yr);
+
+    for (int i=0; i < xi_rho; ++i)
+      for (int j=0; j < eta_rho; ++j)
+        {
+	  u = xr[j][i] * udeg * Proj::RTOD / Proj::REarth;
+	  v = yr[j][i] * udeg * Proj::RTOD / Proj::REarth;
+	  p.map_inv(&latr[j][i], &lonr[j][i], u, v);
+        }
+//  vector<size_t> startp,countp;
+//  startp.push_back(0);
+//  startp.push_back(0);
+    countp[0] = eta_rho;
+    countp[1] = xi_rho;
+    lat_rho.putVar(startp, countp, latr);
+    lon_rho.putVar(startp, countp, lonr);
+  //  delete xr, yr, lonr, latr;
+
+    NcVar x_u = nc.getVar("x_u");
+    NcVar y_u = nc.getVar("y_u");
+    NcVar lat_u = nc.getVar("lat_u");
+    NcVar lon_u = nc.getVar("lon_u");
+    double xu[eta_rho][xi_psi];
+    double yu[eta_rho][xi_psi];
+    double lonu[eta_rho][xi_psi];
+    double latu[eta_rho][xi_psi];
+    x_u.getVar(xu);
+    y_u.getVar(yu);
+
+    for (int i=0; i < xi_psi; ++i)
+      for (int j=0; j < eta_rho; ++j)
+        {
+  	  u = xu[j][i] * udeg * Proj::RTOD / Proj::REarth;
+	  v = yu[j][i] * udeg * Proj::RTOD / Proj::REarth;
+	  p.map_inv(&latu[j][i], &lonu[j][i], u, v);
+        }
+    countp[1] = xi_psi;
+    lat_u.putVar(startp, countp, latu);
+    lon_u.putVar(startp, countp, lonu);
+//    delete xu, yu, lonu, latu;
+
+    NcVar x_v = nc.getVar("x_v");
+    NcVar y_v = nc.getVar("y_v");
+    NcVar lat_v = nc.getVar("lat_v");
+    NcVar lon_v = nc.getVar("lon_v");
+    double xv = new double[eta_psi][xi_rho];
+    double yv = new double[eta_psi][xi_rho];
+    double lonv = new double[eta_psi][xi_rho];
+    double latv = new double[eta_psi][xi_rho];
+    x_v.getVar(xv);
+    y_v.getVar(yv);
+
+    for (int i=0; i < xi_rho; ++i)
+      for (int j=0; j < eta_psi; ++j)
     {
-	u = xp[i] * udeg * Proj::RTOD / Proj::REarth;
-	v = yp[i] * udeg * Proj::RTOD / Proj::REarth;
-	p.map_inv(latp[i], lonp[i], u, v);
+	u = xv[j][i] * udeg * Proj::RTOD / Proj::REarth;
+	v = yv[j][i] * udeg * Proj::RTOD / Proj::REarth;
+	p.map_inv(&latv[j][i], &lonv[j][i], u, v);
     }
-    lat_psi->put(latp, lat_psi->edges());
-    lon_psi->put(lonp, lon_psi->edges());
-    delete xp, yp, lonp, latp;
-
-    NcVar* x_rho = nc.get_var("x_rho");
-    NcVar* y_rho = nc.get_var("y_rho");
-    NcVar* lat_rho = nc.get_var("lat_rho");
-    NcVar* lon_rho = nc.get_var("lon_rho");
-    double* xr = new double[xi_rho * eta_rho];
-    double* yr = new double[xi_rho * eta_rho];
-    double* lonr = new double[xi_rho * eta_rho];
-    double* latr = new double[xi_rho * eta_rho];
-    x_rho->get(xr, x_rho->edges());
-    y_rho->get(yr, x_rho->edges());
-
-    for (int i=0; i < xi_rho*eta_rho; ++i)
-    {
-	u = xr[i] * udeg * Proj::RTOD / Proj::REarth;
-	v = yr[i] * udeg * Proj::RTOD / Proj::REarth;
-	p.map_inv(latr[i], lonr[i], u, v);
-    }
-    lat_rho->put(latr, lat_rho->edges());
-    lon_rho->put(lonr, lon_rho->edges());
-    delete xr, yr, lonr, latr;
-
-    NcVar* x_u = nc.get_var("x_u");
-    NcVar* y_u = nc.get_var("y_u");
-    NcVar* lat_u = nc.get_var("lat_u");
-    NcVar* lon_u = nc.get_var("lon_u");
-    double* xu = new double[xi_psi * eta_rho];
-    double* yu = new double[xi_psi * eta_rho];
-    double* lonu = new double[xi_psi * eta_rho];
-    double* latu = new double[xi_psi * eta_rho];
-    x_u->get(xu, x_u->edges());
-    y_u->get(yu, x_u->edges());
-
-    for (int i=0; i < xi_psi*eta_rho; ++i)
-    {
-	u = xu[i] * udeg * Proj::RTOD / Proj::REarth;
-	v = yu[i] * udeg * Proj::RTOD / Proj::REarth;
-	p.map_inv(latu[i], lonu[i], u, v);
-    }
-    lat_u->put(latu, lat_u->edges());
-    lon_u->put(lonu, lon_u->edges());
-    delete xu, yu, lonu, latu;
-
-    NcVar* x_v = nc.get_var("x_v");
-    NcVar* y_v = nc.get_var("y_v");
-    NcVar* lat_v = nc.get_var("lat_v");
-    NcVar* lon_v = nc.get_var("lon_v");
-    double* xv = new double[xi_rho * eta_rho];
-    double* yv = new double[xi_rho * eta_rho];
-    double* lonv = new double[xi_rho * eta_rho];
-    double* latv = new double[xi_rho * eta_rho];
-    x_v->get(xv, x_v->edges());
-    y_v->get(yv, x_v->edges());
-
-    for (int i=0; i < xi_rho*eta_rho; ++i)
-    {
-	u = xv[i] * udeg * Proj::RTOD / Proj::REarth;
-	v = yv[i] * udeg * Proj::RTOD / Proj::REarth;
-	p.map_inv(latv[i], lonv[i], u, v);
-    }
-    lat_v->put(latv, lat_v->edges());
-    lon_v->put(lonv, lon_v->edges());
-    delete xv, yv, lonv, latv;
+    countp[0] = eta_psi;
+    countp[1] = xi_rho;
+    lat_v.putVar(startp, countp, latv);
+    lon_v.putVar(startp, countp, lonv);
+//    delete xv, yv, lonv, latv;
 
 }

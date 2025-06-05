@@ -14,15 +14,15 @@
 # LIBDIR        Directory where libspem.a goes
 # CDFLIB        Name of netCDF library, either -lnetcdf or null
 #
-#  NETCDF_ROOT = /u1/uaf/kate
-   NETCDF_ROOT = /usr/local/pkg/netcdf//netcdf-3.5.1.gnu-4.5.1
+   NETCDF_ROOT = /usr/local/pkg/MPI/GCC/11.3.0/OpenMPI/4.1.4/netCDF-C++4/4.3.1
       CPPFLAGS = -I$(NETCDF_ROOT)/include
         LIBDIR = $(NETCDF_ROOT)/lib
       CXXFLAGS = -g
         RANLIB = ranlib
 
        LDFLAGS =
-        CDFLIB = -L$(LIBDIR) -lnetcdf_c++ -lnetcdf
+        CDFLIB = -L$(LIBDIR) -lnetcdf_c++4
+#       CDFLIB = -L$(LIBDIR) -lnetcdf_c++4 -lnetcdf
 
 Coast: Proj.o Coast.o
 	$(CXX) -o Coast $(LDFLAGS) $(CXXFLAGS) Proj.o Coast.o

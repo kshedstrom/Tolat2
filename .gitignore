@@ -1,1 +1,5 @@
 makedepend
+*.o
+Coast
+Tolat2
+testing
