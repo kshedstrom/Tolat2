@@ -15,23 +15,24 @@
 # CDFLIB        Name of netCDF library, either -lnetcdf or null
 #
    NETCDF_ROOT = /usr/local/pkg/MPI/GCC/11.3.0/OpenMPI/4.1.4/netCDF-C++4/4.3.1
+  NETCDF_ROOT2 = /usr/local/pkg/MPI/GCC/11.3.0/OpenMPI/4.1.4/netCDF/4.9.0
       CPPFLAGS = -I$(NETCDF_ROOT)/include
         LIBDIR = $(NETCDF_ROOT)/lib
+       LIBDIR2 = $(NETCDF_ROOT2)/lib
       CXXFLAGS = -g
         RANLIB = ranlib
 
        LDFLAGS =
-        CDFLIB = -L$(LIBDIR) -lnetcdf_c++4
-#       CDFLIB = -L$(LIBDIR) -lnetcdf_c++4 -lnetcdf
+        CDFLIB = -L$(LIBDIR) -lnetcdf_c++4 -L$(LIBDIR2) -lnetcdf
+
+Tolat2: Proj.o Tolat2.o
+	$(CXX) -o Tolat2 $(LDFLAGS) $(CXXFLAGS) Proj.o Tolat2.o $(CDFLIB)
 
 Coast: Proj.o Coast.o
 	$(CXX) -o Coast $(LDFLAGS) $(CXXFLAGS) Proj.o Coast.o
 
 Coast_2: Proj.o Coast_2.o
 	$(CXX) -o Coast_2 $(LDFLAGS) $(CXXFLAGS) Proj.o Coast_2.o
-
-Tolat2: Proj.o Tolat2.o
-	$(CXX) -o Tolat2 $(LDFLAGS) $(CXXFLAGS) Proj.o Tolat2.o $(CDFLIB)
 
 Toxy: Toxy.o
 	$(CXX) -o Toxy $(LDFLAGS) $(CXXFLAGS) Toxy.o -lnetcdf_g++ -lnetcdf_gcc

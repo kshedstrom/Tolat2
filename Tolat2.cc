@@ -62,7 +62,7 @@ int main(int argc, char** argv )
 //    double plat = 65.;
 //    Proj p(Proj::CONIC, plat, plon, rota);
 
-// NEP
+// NEP past
 //    double plon = 180.;
 //    double plon = -150.;
 //    double plon = -139.;
@@ -118,10 +118,10 @@ int main(int argc, char** argv )
     NcDim d_xi_psi = nc.getDim("xi_psi");
     NcDim d_eta_psi = nc.getDim("eta_psi");
 
-    int xi_rho = d_xi_rho->getSize();
-    int eta_rho = d_eta_rho->getSize();
-    int xi_psi = d_xi_psi->getSize();
-    int eta_psi = d_eta_psi->getSize();
+    int xi_rho = d_xi_rho.getSize();
+    int eta_rho = d_eta_rho.getSize();
+    int xi_psi = d_xi_psi.getSize();
+    int eta_psi = d_eta_psi.getSize();
 
     NcVar x_psi = nc.getVar("x_psi");
     NcVar y_psi = nc.getVar("y_psi");
@@ -140,7 +140,7 @@ int main(int argc, char** argv )
         {
 	  u = xp[j][i] * udeg * Proj::RTOD / Proj::REarth;
 	  v = yp[j][i] * udeg * Proj::RTOD / Proj::REarth;
-	  p.map_inv(&latp[j][i], &lonp[j][i], u, v);
+	  p.map_inv(latp[j][i], lonp[j][i], u, v);
         }
 
     vector<size_t> startp,countp;
@@ -148,8 +148,8 @@ int main(int argc, char** argv )
     startp.push_back(0);
     countp.push_back(eta_psi);
     countp.push_back(xi_psi);
-    lat_psi.putVar(startp, countp, latp);
-    lon_psi.putVar(startp, countp, lonp);
+//  lat_psi.putVar(startp, countp, latp);
+//  lon_psi.putVar(startp, countp, lonp);
 //    delete xp, yp, lonp, latp;
 
     NcVar x_rho = nc.getVar("x_rho");
@@ -168,15 +168,15 @@ int main(int argc, char** argv )
         {
 	  u = xr[j][i] * udeg * Proj::RTOD / Proj::REarth;
 	  v = yr[j][i] * udeg * Proj::RTOD / Proj::REarth;
-	  p.map_inv(&latr[j][i], &lonr[j][i], u, v);
+	  p.map_inv(latr[j][i], lonr[j][i], u, v);
         }
 //  vector<size_t> startp,countp;
 //  startp.push_back(0);
 //  startp.push_back(0);
     countp[0] = eta_rho;
     countp[1] = xi_rho;
-    lat_rho.putVar(startp, countp, latr);
-    lon_rho.putVar(startp, countp, lonr);
+//  lat_rho.putVar(startp, countp, latr);
+//  lon_rho.putVar(startp, countp, lonr);
   //  delete xr, yr, lonr, latr;
 
     NcVar x_u = nc.getVar("x_u");
@@ -195,11 +195,11 @@ int main(int argc, char** argv )
         {
   	  u = xu[j][i] * udeg * Proj::RTOD / Proj::REarth;
 	  v = yu[j][i] * udeg * Proj::RTOD / Proj::REarth;
-	  p.map_inv(&latu[j][i], &lonu[j][i], u, v);
+	  p.map_inv(latu[j][i], lonu[j][i], u, v);
         }
     countp[1] = xi_psi;
-    lat_u.putVar(startp, countp, latu);
-    lon_u.putVar(startp, countp, lonu);
+//  lat_u.putVar(startp, countp, latu);
+//  lon_u.putVar(startp, countp, lonu);
 //    delete xu, yu, lonu, latu;
 
     NcVar x_v = nc.getVar("x_v");
@@ -218,12 +218,12 @@ int main(int argc, char** argv )
     {
 	u = xv[j][i] * udeg * Proj::RTOD / Proj::REarth;
 	v = yv[j][i] * udeg * Proj::RTOD / Proj::REarth;
-	p.map_inv(&latv[j][i], &lonv[j][i], u, v);
+	p.map_inv(latv[j][i], lonv[j][i], u, v);
     }
     countp[0] = eta_psi;
     countp[1] = xi_rho;
-    lat_v.putVar(startp, countp, latv);
-    lon_v.putVar(startp, countp, lonv);
+//  lat_v.putVar(startp, countp, latv);
+//  lon_v.putVar(startp, countp, lonv);
 //    delete xv, yv, lonv, latv;
 
 }
