@@ -144,7 +144,9 @@ int main(int argc, char** argv )
 
     vector<size_t> startp,countp;
     startp.push_back(0);
-    countp.push_back(eta_psi*xi_psi);
+    startp.push_back(0);
+    countp.push_back(eta_psi);
+    countp.push_back(xi_psi);
     lat_psi.putVar(startp, countp, latp);
     lon_psi.putVar(startp, countp, lonp);
 
@@ -165,7 +167,8 @@ int main(int argc, char** argv )
 	  v = yr[i] * udeg * Proj::RTOD / Proj::REarth;
 	  p.map_inv(latr[i], lonr[i], u, v);
         }
-    countp[0] = eta_rho*xi_rho;
+    countp[0] = eta_rho;
+    countp[1] = xi_rho;
     lat_rho.putVar(startp, countp, latr);
     lon_rho.putVar(startp, countp, lonr);
 
@@ -186,7 +189,7 @@ int main(int argc, char** argv )
 	  v = yu[i] * udeg * Proj::RTOD / Proj::REarth;
 	  p.map_inv(latu[i], lonu[i], u, v);
         }
-    countp[0] = xi_psi*eta_rho;
+    countp[1] = xi_psi;
     lat_u.putVar(startp, countp, latu);
     lon_u.putVar(startp, countp, lonu);
 
@@ -207,7 +210,8 @@ int main(int argc, char** argv )
 	v = yv[i] * udeg * Proj::RTOD / Proj::REarth;
 	p.map_inv(latv[i], lonv[i], u, v);
     }
-    countp[0] = xi_rho*eta_psi;
+    countp[0] = eta_psi;
+    countp[1] = xi_rho;
     lat_v.putVar(startp, countp, latv);
     lon_v.putVar(startp, countp, lonv);
 
